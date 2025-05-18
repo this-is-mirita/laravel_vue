@@ -17,7 +17,7 @@
 
 export default {
     name: "CreateComponent",
-
+    emits: ['person-added'], // 💥 вот это добавь
     data() {
         return {
             name: null,
@@ -29,15 +29,15 @@ export default {
     methods: {
         addPerson() {
             //console.log(this.name, this.age, this.job);
-
             axios.post('/api/people', {
                 name: this.name,
-                age: this.age, // убедись, что это число
+                age: this.age,
                 job: this.job
             }).then(response => {
                 this.name = null,
                 this.age = null,
                 this.job = null,
+                this.$emit('person-added');
                 console.log("Успешно:", response.data);
             }).catch(error => {
                 console.error("Ошибка:", error.response.data);

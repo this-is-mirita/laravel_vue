@@ -1,37 +1,17 @@
 <template>
 <div class="row">
-    PostComponent
-    <single-post-component></single-post-component>
     <div class="col-4">
-        <create-component></create-component>
+        <create-component @person-added="refreshList"></create-component>
     </div>
     <div class="col-8">
-        <table class="table">
-            <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">First</th>
-                <th scope="col">Last</th>
-                <th scope="col">Handle</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="person in persons" :key="person.id">
-                <th scope="row">{{ person.id }}</th>
-                <td>{{ person.name }}</td>
-                <td>{{ person.age }}</td>
-                <td>{{ person.job }}</td>
-            </tr>
-            </tbody>
-        </table>
+        <index-component ref="indexRef"></index-component>
     </div>
 </div>
 </template>
 
 <script>
-import SinglePostComponent from "@/components/SinglePostComponent.vue";
 import CreateComponent from "@/components/CreateComponent.vue";
-import data from "bootstrap/js/src/dom/data.js";
+import IndexComponent from "@/components/IndexComponent.vue";
 export default {
     name: "PostComponent",
 
@@ -45,21 +25,22 @@ export default {
     },
     methods: {
         getPersons(){
-            axios.get("/persons")
+            axios.get("/")
             .then(res => {
                 this.persons = res.data;
             })
             .catch(err => {
-                console.log(err);
-            }).finally(() => {
-
+               console.log(err);
             })
-        }
+        },
+        refreshList() {
+            this.$refs.indexRef.getPeople(); // вызов метода из дочернего компонента
+        },
     },
 
     components : {
+        IndexComponent,
         CreateComponent,
-        SinglePostComponent
     }
 }
 </script>
