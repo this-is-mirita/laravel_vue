@@ -19,4 +19,9 @@ export default defineConfig({
             'vue': 'vue/dist/vue.esm-bundler.js',
         },
     },
+    // server: {
+    //     proxy: {
+    //         '/api': 'http://localhost:8000'
+    //     }
+    // }
 });

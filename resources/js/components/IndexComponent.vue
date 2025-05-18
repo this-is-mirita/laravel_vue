@@ -1,52 +1,75 @@
 <template>
-    <div>
-        <table class="table">
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Job</th>
-                <th>Edit</th>
-            </tr>
-            </thead>
-            <tbody>
-            <!--
+    <div class="container mt-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <table class="table table-hover align-middle text-center mb-0">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Имя</th>
+                        <th>Возраст</th>
+                        <th>Профессия</th>
+                        <th colspan="2">Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="person in persons" :key="person.id">
+                        <template v-if="editPersonId === person.id">
+                            <td>{{ person.id }}</td>
+                            <td>
+                                <input type="text" v-model="person.name" class="form-control form-control-sm shadow-sm" />
+                            </td>
+                            <td>
+                                <input type="number" v-model="person.age" class="form-control form-control-sm shadow-sm" />
+                            </td>
+                            <td>
+                                <input type="text" v-model="person.job" class="form-control form-control-sm shadow-sm" />
+                            </td>
+                            <td>
+                                <button @click.prevent="updatePerson(person)" class="btn btn-white btn-sm shadow-sm">
+                                    ✅
+                                </button>
+                            </td>
+                            <td>
+                                <button @click.prevent="cancelEditPerson(person)" class="btn btn-white btn-sm shadow-sm">
+                                    ✖️
+                                </button>
+                            </td>
+                        </template>
+                        <template v-else>
+                            <td>{{ person.id }}</td>
+                            <td>{{ person.name }}</td>
+                            <td>{{ person.age }}</td>
+                            <td>{{ person.job }}</td>
+                            <td>
+                                <button @click.prevent="changeEditPersonId(person.id, person)" class="btn btn-white btn-sm shadow-sm">
+                                    ✏️
+                                </button>
+                            </td>
+                            <td>
+                                <button @click.prevent="deletePerson(person.id, person)" class="btn btn-white btn-sm shadow-sm">
+                                    🗑️
+                                </button>
+                            </td>
+                        </template>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!--
             | person.id | editPersonId | Условие `editPersonId === person.id` | Что покажет?         |
             | --------- | ------------ | ------------------------------------ | -------------------- |
             | 1         | 2            | ❌ `1 !== 2`                          | обычный вид          |
             | 2         | 2            | ✅ `2 === 2`                          | форма редактирования |
             | 3         | 2            | ❌ `3 !== 2`                          | обычный вид          |
             -->
-            <tr v-for="person in persons" :key="person.id">
-                <template v-if="editPersonId === person.id">
-                    <td>{{ person.id }}</td>
-                    <td><input class="form-control" type="text" v-model="person.name" /></td>
-                    <td><input class="form-control" type="number" v-model="person.age" /></td>
-                    <td><input class="form-control" type="text" v-model="person.job" /></td>
-                    <td>
-                        <button @click.prevent="updatePerson(person)" class="btn btn-success">Обновить</button>
-                    </td>
-                    <td>
-                        <button @click.prevent="cancelEditPerson(person)" class="btn btn-success">Отменить</button>
-                    </td>
-                </template>
-                <template v-else>
-                    <td>{{ person.id }}</td>
-                    <td>{{ person.name }}</td>
-                    <td>{{ person.age }}</td>
-                    <td>{{ person.job }}</td>
-                    <td>
-                        <button @click.prevent="changeEditPersonId(person.id, person)" class="btn btn-success">Редактировать</button>
-                    </td>
-                </template>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-</template>
-
 <script>
+import {useToast} from "vue-toastification";
+
 export default {
     name: "IndexComponent",
     data() {
@@ -69,28 +92,27 @@ export default {
         },
         updatePerson(person) {
             // @click="updatePerson(person)" весь объект person в метод:
-            console.log(person); // { id: 2, name: 'Bob', age: 30, job: 'Designer' }
+           // console.log(person); // { id: 2, name: 'Bob', age: 30, job: 'Designer' }
             axios.patch(`/api/people/persons/${person.id}`, {
                 name: person.name,
                 age: person.age,
                 job: person.job,
+            }).then((response) => {
+                const toast = useToast()
+                //console.log(response.data);
+                toast.success('Данные обновлены успешно')
+                // можно вызвать и этот метод  getPeople()
+                this.editPersonId = null;
             })
-                .then((response) => {
-                    console.log(response.data);
-                    this.editPersonId = null;
-                })
-                .catch((error) => {
-                    console.log(error.response?.data || error);
-                });
         },
         changeEditPersonId(id, person) {
             this.editPersonId = id;
-            console.log('айди строки/юзера' + ' ' + id, person);
+           // console.log('айди строки/юзера' + ' ' + id, person);
             // передаем нашего типа для сохранения в дефолтыч
             this.defaultPerson = {...person}
         },
         cancelEditPerson(person) {
-            console.log(person);
+           // console.log(person);
 
             // Пользователь начал редактирование и внёс изменения.
             // Мы сохранили оригинальные данные в defaultPerson.
@@ -103,8 +125,17 @@ export default {
             // Выключаем режим редактирования и очищаем сохранённые данные
             this.editPersonId = null;
             this.defaultPerson = null;
-        }
-    }
+        },
+        deletePerson(id) {
+            //console.log(id);
+            axios.delete(`/api/people/${id}`).then((response) => {
+                const toast = useToast()
+                // библиотека для красивой плюшки
+                toast.error(response.data.status || 'Удалено успешно')
+                this.getPeople()
+            })
+        },
+    },
 };
 </script>
 

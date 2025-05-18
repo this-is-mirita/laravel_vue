@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Person\DeletePersonController;
 use App\Http\Controllers\Person\IndexController;
 use App\Http\Controllers\Person\StorePersonController;
 use App\Http\Controllers\Person\UpdatePersonController;
@@ -19,5 +20,7 @@ Route::prefix('people')->name('Person')->group(function () {
 
     //api/people/persons/
     Route::patch('/persons/{person}', UpdatePersonController::class);
+    //api/people/persons/{person}
+    Route::delete('/{person}', DeletePersonController::class);
 
 });
