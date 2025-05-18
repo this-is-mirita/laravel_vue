@@ -1,7 +1,9 @@
 <template>
+    <!-- Контейнер таблицы -->
     <div class="container mt-5">
         <div class="card shadow-sm border-0">
             <div class="card-body">
+                <!-- Таблица с пользователями -->
                 <table class="table table-hover align-middle text-center mb-0">
                     <thead>
                     <tr>
@@ -13,44 +15,24 @@
                     </tr>
                     </thead>
                     <tbody>
+                    <!-- Перебираем всех пользователей -->
                     <tr v-for="person in persons" :key="person.id">
+                        <!-- Если редактируется именно эта строка -->
                         <template v-if="editPersonId === person.id">
-                            <td>{{ person.id }}</td>
-                            <td>
-                                <input type="text" v-model="person.name" class="form-control form-control-sm shadow-sm" />
-                            </td>
-                            <td>
-                                <input type="number" v-model="person.age" class="form-control form-control-sm shadow-sm" />
-                            </td>
-                            <td>
-                                <input type="text" v-model="person.job" class="form-control form-control-sm shadow-sm" />
-                            </td>
-                            <td>
-                                <button @click.prevent="updatePerson(person)" class="btn btn-white btn-sm shadow-sm">
-                                    ✅
-                                </button>
-                            </td>
-                            <td>
-                                <button @click.prevent="cancelEditPerson(person)" class="btn btn-white btn-sm shadow-sm">
-                                    ✖️
-                                </button>
-                            </td>
+                            <!-- Показываем форму редактирования -->
+                            <edit-table-component
+                                :person="person"
+                                @update="updatePerson"
+                                @cancel="cancelEditPerson"
+                            />
                         </template>
                         <template v-else>
-                            <td>{{ person.id }}</td>
-                            <td>{{ person.name }}</td>
-                            <td>{{ person.age }}</td>
-                            <td>{{ person.job }}</td>
-                            <td>
-                                <button @click.prevent="changeEditPersonId(person.id, person)" class="btn btn-white btn-sm shadow-sm">
-                                    ✏️
-                                </button>
-                            </td>
-                            <td>
-                                <button @click.prevent="deletePerson(person.id, person)" class="btn btn-white btn-sm shadow-sm">
-                                    🗑️
-                                </button>
-                            </td>
+                            <!-- Иначе — обычное отображение -->
+                            <show-table-component
+                                :person="person"
+                                @edit="changeEditPersonId"
+                                @delete="deletePerson"
+                            />
                         </template>
                     </tr>
                     </tbody>
@@ -69,18 +51,23 @@
             -->
 <script>
 import {useToast} from "vue-toastification";
-
+import EditTableComponent from "@/components/EditTableComponent.vue";
+import ShowTableComponent from "@/components/ShowTableComponent.vue";
 export default {
     name: "IndexComponent",
+    components: {ShowTableComponent, EditTableComponent},
     data() {
         return {
+            // Массив всех людей из базы
             persons: [],
+            // ID пользователя, которого сейчас редактируют
             editPersonId: null,
-            // для отмены чтоб данные были дефолтыч
+            // Оригинальные данные до редактирования (для отмены)
             defaultPerson: null,
         };
     },
     mounted() {
+        // Загружаем людей при загрузке компонента
         this.getPeople();
     },
     methods: {
@@ -90,6 +77,7 @@ export default {
                 this.persons = response.data;
             });
         },
+        // Обновить данные пользователя
         updatePerson(person) {
             // @click="updatePerson(person)" весь объект person в метод:
            // console.log(person); // { id: 2, name: 'Bob', age: 30, job: 'Designer' }
@@ -101,23 +89,22 @@ export default {
                 const toast = useToast()
                 //console.log(response.data);
                 toast.success('Данные обновлены успешно')
-                // можно вызвать и этот метод  getPeople()
+                // можно вызвать и этот метод  getPeople(), зануление
                 this.editPersonId = null;
             })
         },
         changeEditPersonId(id, person) {
             this.editPersonId = id;
-           // console.log('айди строки/юзера' + ' ' + id, person);
-            // передаем нашего типа для сохранения в дефолтыч
+            // console.log('айди строки/юзера' + ' ' + id, person);
+            // Сохраняем оригинальные данные перед редактированием / передаем нашего типа для сохранения в дефолтыч
             this.defaultPerson = {...person}
         },
         cancelEditPerson(person) {
-           // console.log(person);
-
+            //console.log(person);
             // Пользователь начал редактирование и внёс изменения.
             // Мы сохранили оригинальные данные в defaultPerson.
             // При нажатии на "Отменить" — возвращаем исходные значения.
-
+            // Восстанавливаем данные из defaultPerson
             person.name = this.defaultPerson.name;
             person.age = this.defaultPerson.age;
             person.job = this.defaultPerson.job;
@@ -126,14 +113,19 @@ export default {
             this.editPersonId = null;
             this.defaultPerson = null;
         },
+        // Удалить пользователя
         deletePerson(id) {
             //console.log(id);
             axios.delete(`/api/people/${id}`).then((response) => {
                 const toast = useToast()
                 // библиотека для красивой плюшки
                 toast.error(response.data.status || 'Удалено успешно')
-                this.getPeople()
+                this.getPeople(); // Обновляем список
             })
+        },
+        // Просто тестовый лог
+        indexLog() {
+            return console.log("this is index component");
         },
     },
 };

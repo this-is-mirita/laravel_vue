@@ -1,10 +1,10 @@
 <template>
 <div class="row">
     <div class="col-4">
-        <create-component @person-added="refreshList"></create-component>
+        <create-component ref="createRef" @person-added="refreshList"></create-component>
     </div>
     <div class="col-8">
-        <index-component ref="indexRef"></index-component>
+        <index-component ref="indexRef" ></index-component>
     </div>
 </div>
 </template>
@@ -21,7 +21,9 @@ export default {
         }
     },
     mounted() {
-        this.getPersons()
+        this.getPersons();
+        // на компонент вещаем ref="indexRef" и чяерез него можно вытянуть всё из дрогого компонента
+        // console.dir(this.$refs.indexRef.testRefs);
     },
     methods: {
         getPersons(){
@@ -36,6 +38,14 @@ export default {
         refreshList() {
             this.$refs.indexRef.getPeople(); // вызов метода из дочернего компонента
         },
+        parantLog(){
+            return console.log('this is post component');
+        },
+    },
+    provide(){
+        return {
+            parantLog: this.parantLog,
+        };
     },
 
     components : {
